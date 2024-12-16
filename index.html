@@ -1,0 +1,309 @@
+<html><head><base href="." />
+<style>
+  body {
+    background: #000;
+    color: #33ff33;
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    padding: 20px;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .crt {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  .terminal {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    border: 2px solid #33ff33;
+    box-shadow: 0 0 20px #33ff33;
+    height: calc(100vh - 44px);
+    overflow-y: auto;
+  }
+
+  #output {
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+  }
+
+  .input-line {
+    display: flex;
+    align-items: center;
+  }
+
+  .prompt {
+    color: #33ff33;
+    margin-right: 10px;
+  }
+
+  #command-input {
+    background: transparent;
+    border: none;
+    color: #33ff33;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    flex-grow: 1;
+    outline: none;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 0.97 }
+    50% { opacity: 1 }
+    100% { opacity: 0.98 }
+  }
+
+  .cursor {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1 }
+    51%, 100% { opacity: 0 }
+  }
+
+  .bsod {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0000aa;
+    color: #ffffff;
+    padding: 50px;
+    font-family: 'Courier New', monospace;
+    z-index: 1000;
+  }
+</style>
+</head>
+<body>
+  <div class="crt"></div>
+  <div class="bsod">
+    <pre>
+A fatal error has occurred at 0028:C00A8D1F
+
+* SYSTEM HALTED *
+
+Error: GENERAL_PROTECTION_FAULT
+Technical information:
+*** STOP: 0x0000000A (0x00000000, 0x00000002)
+
+Press any key to restart</pre>
+  </div>
+  <div class="terminal">
+    <div id="output">Alpha Development Build - Enhanced Terminal v1.84
+Copyright (c) 1984 All rights reserved.
+WARNING: This is an unstable development version.
+
+Type 'help' for available commands.</div>
+    <div class="input-line">
+      <span class="prompt">C:\></span>
+      <input type="text" id="command-input" autofocus>
+    </div>
+  </div>
+
+<script>
+const commands = {
+  help: "Available commands:\n" +
+        "- help: Display this help message\n" +
+        "- clear: Clear the terminal\n" +
+        "- date: Display current date\n" +
+        "- time: Display current time\n" +
+        "- echo [text]: Display text\n" +
+        "- dir: List directory contents\n" +
+        "- ver: Display system version\n" +
+        "- cls: Clear screen\n" +
+        "- color [code]: Change text color\n" +
+        "- calc [expr]: Simple calculator (unstable)\n" +
+        "- type [filename]: Display file contents\n" +
+        "- tree: Display directory tree\n" +
+        "- systeminfo: Display system information\n" +
+        "- game: Play text adventure game\n" +
+        "- ascii: Display ASCII art\n" +
+        "- whoami: Display current user\n" +
+        "- ping: Simulate network ping\n" +
+        "- crash: Simulate system crash\n" +
+        "- debug: Enter debug mode (unstable)\n" +
+        "- exit: Exit terminal (just kidding!)",
+  
+  clear: () => "",
+  cls: () => "",
+  
+  date: () => new Date().toLocaleDateString(),
+  
+  time: () => new Date().toLocaleTimeString(),
+  
+  echo: (args) => args,
+  
+  dir: `Directory of C:\\
+    
+    COMMAND  COM    43,210 05-15-1984
+    AUTOEXEC BAT     1,024 05-15-1984
+    CONFIG   SYS       512 05-15-1984
+    DEBUG    COM     8,192 05-15-1984
+    GAME    EXE    12,288 05-15-1984
+    CALC    COM     4,096 05-15-1984
+    
+    6 File(s)    69,322 bytes
+    0 Dir(s)     360,000 bytes free`,
+    
+  ver: "MS-DOS Alpha Version 1.84\nEnhanced Terminal Development Build\nCopyright (c) 1984",
+
+  calc: (args) => {
+    if (Math.random() < 0.3) {
+      triggerBSOD();
+      return "FATAL ERROR: CALCULATION OVERFLOW";
+    }
+    try {
+      return eval(args);
+    } catch {
+      return "Syntax error";
+    }
+  },
+
+  debug: () => {
+    if (Math.random() < 0.5) {
+      triggerBSOD();
+      return "DEBUG MODE CAUSED SYSTEM CRASH";
+    }
+    return "Debug mode activated. System stability not guaranteed.";
+  },
+
+  crash: () => {
+    setTimeout(triggerBSOD, 500);
+    return "Initiating system crash...";
+  },
+
+  type: (filename) => {
+    const files = {
+      "readme.txt": "Enhanced Terminal System ALPHA\nThis is a development build.\nUse at your own risk!",
+      "config.sys": "DEVICE=HIMEM.SYS\nDEVICE=EMM386.EXE\nFILES=20\nBUFFERS=10",
+      "autoexec.bat": "@ECHO OFF\nPROMPT $P$G\nPATH C:\\DOS"
+    };
+    return files[filename.toLowerCase()] || "File not found";
+  },
+
+  tree: `C:\\
+├───DOS
+├───SYSTEM
+└───TEMP`,
+
+  systeminfo: `
+Host Name:              ALPHA-PC
+OS Name:                MS-DOS
+OS Version:             1.84 (Alpha)
+System Manufacturer:    IBM
+System Model:           PC
+System Type:            16-bit
+Processor:             Intel 8088
+Memory:                256 KB
+Page File:             N/A
+Boot Device:           C:\\`,
+
+  game: () => {
+    if (Math.random() < 0.2) {
+      triggerBSOD();
+      return "GAME SYSTEM FAILURE";
+    }
+    return "You are in a dark room. You see a door to the NORTH.\nWhat do you do? (type 'exit' to quit game)";
+  },
+
+  ascii: `
+   _____  _       ____  _    _ _____ 
+  / ____|(_)     |  _ \\| |  | |  __ \\
+ | |     | |     | |_) | |  | | |  | |
+ | |     | |     |  _ <| |  | | |  | |
+ | |____ | |     | |_) | |__| | |__| |
+  \\_____||_|     |____/ \\____/|_____/`,
+
+  whoami: "SYSTEM\\DEVELOPER",
+
+  ping: () => {
+    if (Math.random() < 0.2) {
+      triggerBSOD();
+      return "NETWORK STACK OVERFLOW";
+    }
+    const time = Math.floor(Math.random() * 200) + 50;
+    return `Pinging localhost with 32 bytes of data:\nReply from 127.0.0.1: bytes=32 time=${time}ms TTL=32`;
+  },
+
+  exit: "Nice try! This terminal never exits. It's a feature, not a bug! :)",
+
+  color: (code) => {
+    const colors = {
+      "green": "#33ff33",
+      "amber": "#ffb000",
+      "white": "#ffffff",
+      "blue": "#3333ff"
+    };
+    if (colors[code]) {
+      document.body.style.color = colors[code];
+      document.querySelector('.prompt').style.color = colors[code];
+      document.getElementById('command-input').style.color = colors[code];
+      return `Color changed to ${code}`;
+    }
+    return "Available colors: green, amber, white, blue";
+  }
+};
+
+function triggerBSOD() {
+  const bsod = document.querySelector('.bsod');
+  bsod.style.display = 'block';
+  document.addEventListener('keydown', function resetBSOD() {
+    bsod.style.display = 'none';
+    document.removeEventListener('keydown', resetBSOD);
+  }, { once: true });
+}
+
+const output = document.getElementById('output');
+const input = document.getElementById('command-input');
+
+input.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    const command = input.value.trim().toLowerCase();
+    const [cmd, ...args] = command.split(' ');
+    
+    const response = command === '' ? '' : 
+      `\nC:\\>${command}\n${processCommand(cmd, args.join(' '))}`;
+    
+    output.textContent += response;
+    input.value = '';
+    
+    // Random chance of crash on any command
+    if (Math.random() < 0.05) {
+      setTimeout(triggerBSOD, 500);
+    }
+    
+    output.scrollTop = output.scrollHeight;
+  }
+});
+
+function processCommand(cmd, args) {
+  if (commands.hasOwnProperty(cmd)) {
+    if (typeof commands[cmd] === 'function') {
+      return commands[cmd](args);
+    }
+    return commands[cmd];
+  }
+  return `Bad command or file name: ${cmd}`;
+}
+
+document.addEventListener('click', () => input.focus());
+
+setInterval(() => {
+  document.body.style.opacity = (Math.random() * 0.01 + 0.98);
+}, 100);
+</script>
+</body></html>
